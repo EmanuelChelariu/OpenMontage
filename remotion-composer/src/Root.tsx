@@ -19,6 +19,7 @@ import { LyricOverlay, LyricOverlayProps } from "./LyricOverlay";
 import { CriccoLogo, CriccoLogoProps } from "./CriccoLogo";
 import { EmanuelSplash, EmanuelSplashProps } from "./EmanuelSplash";
 import { CantiereAppLogo, CantiereAppLogoProps } from "./CantiereAppLogo";
+import { CantiereAppIcon, CantiereAppIconProps } from "./CantiereAppIcon";
 
 // ---------------------------------------------------------------------------
 // Theme System — prevents every video from looking like dark fintech
@@ -351,6 +352,20 @@ export const Root: React.FC = () => {
           defaultProps={
             { transparent: false, wordmark: name !== "Icon" } as CantiereAppLogoProps
           }
+        />
+      ))}
+      {/* Icona app: una composizione per variante, cosi' i tre asset restano
+          coerenti e rigenerabili da codice. */}
+      {(["ios", "adaptive", "splash"] as const).map((v) => (
+        <Composition
+          key={v}
+          id={`CantiereAppIcon-${v}`}
+          component={CantiereAppIcon}
+          durationInFrames={1}
+          fps={30}
+          width={1024}
+          height={1024}
+          defaultProps={{ variant: v } as CantiereAppIconProps}
         />
       ))}
       <Composition
