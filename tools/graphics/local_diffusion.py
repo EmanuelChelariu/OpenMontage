@@ -61,11 +61,11 @@ class LocalDiffusion(BaseTool):
         "properties": {
             "prompt": {"type": "string"},
             "negative_prompt": {"type": "string", "default": ""},
-            "width": {"type": "integer", "default": 512},
-            "height": {"type": "integer", "default": 512},
+            "width": {"type": "integer", "default": 1024},
+            "height": {"type": "integer", "default": 1024},
             "model": {
                 "type": "string",
-                "default": "stabilityai/stable-diffusion-2-1-base",
+                "default": "stabilityai/stable-diffusion-xl-base-1.0",
             },
             "seed": {"type": "integer"},
             "num_inference_steps": {"type": "integer", "default": 30},
@@ -103,28 +103,37 @@ class LocalDiffusion(BaseTool):
             )
 
         import torch
-        from diffusers import StableDiffusionPipeline
+        from diffusers import AutoPipelineForText2Image
 
         start = time.time()
         prompt = inputs["prompt"]
         negative = inputs.get("negative_prompt", "")
-        width = inputs.get("width", 512)
-        height = inputs.get("height", 512)
+        width = inputs.get("width", 1024)
+        height = inputs.get("height", 1024)
         seed = inputs.get("seed")
-        model_id = inputs.get("model", "stabilityai/stable-diffusion-2-1-base")
+        model_id = inputs.get("model", "stabilityai/stable-diffusion-xl-base-1.0")
         steps = inputs.get("num_inference_steps", 30)
         guidance = inputs.get("guidance_scale", 7.5)
 
         try:
-            device = "cuda" if torch.cuda.is_available() else "cpu"
-            dtype = torch.float16 if device == "cuda" else torch.float32
+            if torch.cuda.is_available():
+                device = "cuda"
+            elif torch.backends.mps.is_available():
+                device = "mps"
+            else:
+                device = "cpu"
+            dtype = torch.float32 if device == "cpu" else torch.float16
 
-            pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=dtype)
+            pipe = AutoPipelineForText2Image.from_pretrained(model_id, torch_dtype=dtype)
             pipe = pipe.to(device)
+            pipe.set_progress_bar_config(disable=True)
+            if device == "mps":
+                pipe.enable_attention_slicing()
 
             generator = None
             if seed is not None:
-                generator = torch.Generator(device=device).manual_seed(seed)
+                # MPS has no native generator; seed on CPU and let the pipeline consume it.
+                generator = torch.Generator(device="cpu" if device == "mps" else device).manual_seed(seed)
 
             image = pipe(
                 prompt,
