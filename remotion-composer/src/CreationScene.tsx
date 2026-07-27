@@ -33,6 +33,8 @@ export interface CreationSceneProps {
   seconds: number;
   zoom: "in" | "out";
   motion?: CreationSceneMotion | null;
+  /** Crop del cover (es. "50% 62%" per scendere); IDENTICO su bg e fg. */
+  objectPosition?: string;
 }
 
 export const calculateCreationSceneMetadata: CalculateMetadataFunction<
@@ -53,6 +55,7 @@ export const CreationScene: React.FC<CreationSceneProps> = ({
   seconds,
   zoom,
   motion,
+  objectPosition = "50% 50%",
 }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
@@ -91,6 +94,7 @@ export const CreationScene: React.FC<CreationSceneProps> = ({
     width: "100%",
     height: "100%",
     objectFit: "cover",
+    objectPosition,
   };
 
   return (

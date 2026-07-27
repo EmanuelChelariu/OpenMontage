@@ -39,22 +39,26 @@ ZOOMS = ["in", "out", "in", "out", "in", "out", "in", "out", "in",
          "out", "in", "in", "out", "in", "out", "in", "out", "in"]
 
 # Scene animate: indice -> parametri del moto del ritaglio.
+# Ampiezze SOTTO ~4px/0.6%: il "doppione" cotto nello sfondo resta sotto la
+# soglia percettiva a 1080p (verdetto QA 2026-07-27: a 8-13px si vedono
+# doppi bordi, zanne duplicate, anelli attorno ai capelli).
 ANIM: dict[int, dict[str, object]] = {
-    0:  {"period": 4.0, "ampY": 10, "ampX": 6, "ampRot": 1.2,
-         "origin": "50% 50%"},   # colomba: fluttua
-    7:  {"period": 5.0, "ampY": 8, "ampX": 10, "ampRot": 0.8,
+    0:  {"period": 4.0, "ampY": 6, "ampX": 3, "ampRot": 0.6,
+         "origin": "50% 50%"},   # colomba: fluttua (fondo scuro, tollera di piu')
+    7:  {"period": 5.0, "ampY": 3.5, "ampX": 4, "ampRot": 0.3,
          "origin": "50% 50%"},   # balena: deriva lenta
-    8:  {"period": 3.6, "ampY": 3, "ampRot": 1.0,
-         "origin": "50% 100%"},  # tucano: ondeggia sul ramo
-    9:  {"period": 3.4, "ampScale": 0.015, "ampY": 2,
-         "origin": "50% 100%"},  # elefanti: respiro
+    8:  {"period": 3.6, "ampY": 2, "ampRot": 0.5,
+         "origin": "50% 100%",
+         "objectPosition": "50% 13%"},  # tucano: crop in alto, occhio in quadro
+    9:  {"period": 3.4, "ampScale": 0.005, "ampY": 1,
+         "origin": "50% 100%"},  # elefanti: respiro minimo (zanne doppie!)
     10: {"period": 2.8, "ampY": 4, "ampRot": 0.5,
-         "origin": "50% 100%"},  # scoiattoli: saltelli piccoli
-    11: {"period": 3.8, "ampScale": 0.012, "ampRot": 0.4,
+         "origin": "50% 100%"},  # scoiattoli: QA ok, invariato
+    11: {"period": 3.8, "ampScale": 0.005, "ampRot": 0.2,
          "origin": "50% 100%"},  # Adamo si sveglia: respiro
-    15: {"period": 3.0, "ampScale": 0.018,
+    15: {"period": 3.0, "ampScale": 0.006,
          "origin": "50% 60%"},   # Adamo dorme: respiro del petto
-    16: {"period": 4.2, "ampY": 3, "ampRot": 0.5,
+    16: {"period": 4.2, "ampY": 1.5, "ampRot": 0.25,
          "origin": "50% 100%"},  # Adamo ed Eva: ondeggio insieme
 }
 
@@ -85,7 +89,15 @@ def make_cutouts() -> dict[int, Path]:
             print(f"  cutout {idx:02d} gia' presente, salto", flush=True)
             continue
         print(f"  cutout {idx:02d}...", flush=True)
-        dst.write_bytes(remove(src.read_bytes(), session=session))
+        # Alpha matting + erosione: mangia la frangia di sfondo cotta nel
+        # bordo del matte (l'"alone che brilla" del verdetto QA).
+        dst.write_bytes(remove(
+            src.read_bytes(), session=session,
+            alpha_matting=True,
+            alpha_matting_foreground_threshold=240,
+            alpha_matting_background_threshold=15,
+            alpha_matting_erode_size=12,
+        ))
     return cutouts
 
 
@@ -100,13 +112,15 @@ def render_scene(idx: int, seconds: float, cutout: Path) -> Path:
     if not fg_pub.exists():
         fg_pub.write_bytes(cutout.read_bytes())
 
+    motion = {k: v for k, v in ANIM[idx].items() if k != "objectPosition"}
     props = WORK / f"anim_props_{idx:02d}.json"
     props.write_text(json.dumps({
         "bg": f"scene_{idx:02d}.png",
         "fg": f"cutout_{idx:02d}.png",
         "seconds": round(seconds, 3),
         "zoom": ZOOMS[idx],
-        "motion": ANIM[idx],
+        "motion": motion,
+        "objectPosition": ANIM[idx].get("objectPosition", "50% 50%"),
     }))
 
     raw = WORK / f"anim_raw_{idx:02d}.mp4"
