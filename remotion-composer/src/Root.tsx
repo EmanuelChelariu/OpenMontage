@@ -16,6 +16,9 @@ import { ProductReveal, ProductRevealProps } from "./components/ProductReveal";
 import { CaptionOverlay, WordCaption } from "./components/CaptionOverlay";
 import { CollageBurst, CollageBurstProps } from "./CollageBurst";
 import { LyricOverlay, LyricOverlayProps } from "./LyricOverlay";
+import { CriccoLogo, CriccoLogoProps } from "./CriccoLogo";
+import { EmanuelSplash, EmanuelSplashProps } from "./EmanuelSplash";
+import { CantiereAppLogo, CantiereAppLogoProps } from "./CantiereAppLogo";
 
 // ---------------------------------------------------------------------------
 // Theme System — prevents every video from looking like dark fintech
@@ -296,6 +299,60 @@ export const Root: React.FC = () => {
           bottomY: 0.88,
         } as LyricOverlayProps}
       />
+      {(
+        [
+          ["h-ascent", "EmanuelHAscent"],
+          ["h-fan", "EmanuelHFan"],
+          ["h-light", "EmanuelHLight"],
+          ["i-draw", "EmanuelIDraw"],
+          ["i-rise", "EmanuelIRise"],
+          ["i-alive", "EmanuelIAlive"],
+        ] as const
+      ).map(([concept, id]) => (
+        <Composition
+          key={id}
+          id={id}
+          component={EmanuelSplash}
+          durationInFrames={96}
+          fps={30}
+          width={1080}
+          height={1920}
+          defaultProps={{ concept } as EmanuelSplashProps}
+        />
+      ))}
+      {(["A", "B", "C"] as const).map((concept) => (
+        <Composition
+          key={concept}
+          id={`CriccoLogo${concept}`}
+          component={CriccoLogo}
+          durationInFrames={200}
+          fps={30}
+          width={1920}
+          height={1080}
+          defaultProps={{ concept } as CriccoLogoProps}
+        />
+      ))}
+      {/* CantiereApp — logo sting. Un formato per piazzamento, UNA composizione:
+          il layout è espresso in rapporto al lato minore, non in px assoluti. */}
+      {([
+        ["Wide", 1920, 1080],
+        ["Square", 1080, 1080],
+        ["Story", 1080, 1920],
+        ["Icon", 1024, 1024],
+      ] as const).map(([name, w, h]) => (
+        <Composition
+          key={name}
+          id={`CantiereAppLogo${name}`}
+          component={CantiereAppLogo}
+          durationInFrames={90}
+          fps={30}
+          width={w}
+          height={h}
+          defaultProps={
+            { transparent: false, wordmark: name !== "Icon" } as CantiereAppLogoProps
+          }
+        />
+      ))}
       <Composition
         id="EndTag"
         component={EndTag}
