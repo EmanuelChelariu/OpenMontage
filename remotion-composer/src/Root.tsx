@@ -20,6 +20,11 @@ import { CriccoLogo, CriccoLogoProps } from "./CriccoLogo";
 import { EmanuelSplash, EmanuelSplashProps } from "./EmanuelSplash";
 import { CantiereAppLogo, CantiereAppLogoProps } from "./CantiereAppLogo";
 import { CantiereAppIcon, CantiereAppIconProps } from "./CantiereAppIcon";
+import {
+  CreationScene,
+  CreationSceneProps,
+  calculateCreationSceneMetadata,
+} from "./CreationScene";
 
 // ---------------------------------------------------------------------------
 // Theme System — prevents every video from looking like dark fintech
@@ -333,6 +338,25 @@ export const Root: React.FC = () => {
           defaultProps={{ concept } as CriccoLogoProps}
         />
       ))}
+      {/* Creation kids story — still storybook con micro-animazione cutout */}
+      <Composition
+        id="CreationScene"
+        component={CreationScene}
+        durationInFrames={200}
+        fps={30}
+        width={1920}
+        height={1080}
+        calculateMetadata={calculateCreationSceneMetadata}
+        defaultProps={
+          {
+            bg: "scene_00.png",
+            fg: null,
+            seconds: 6,
+            zoom: "in",
+            motion: null,
+          } as CreationSceneProps
+        }
+      />
       {/* CantiereApp — logo sting. Un formato per piazzamento, UNA composizione:
           il layout è espresso in rapporto al lato minore, non in px assoluti. */}
       {([
