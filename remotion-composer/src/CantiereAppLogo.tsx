@@ -13,25 +13,31 @@ const { fontFamily } = loadFont();
 // ---------------------------------------------------------------------------
 // CantiereApp — logo sting.
 //
-// Il prodotto è due cose insieme: si lavora in cantiere e si tiene la
-// contabilità. L'animazione deve dirle entrambe, e può farlo con UN solo
-// disegno perché i due mestieri condividono la stessa grafica:
+// Il prodotto è due mestieri insieme: si lavora in cantiere e si tiene la
+// contabilità. I due condividono la stessa grafica, quindi un solo movimento
+// può dirle entrambe:
 //
-//   • la griglia del ponteggio  ==  la carta quadrettata del registro
-//   • il mattone che si posa    ==  la presenza che si segna
-//   • la trave che chiude       ==  la riga che si tira sopra il totale
+//   griglia del ponteggio   ==  carta quadrettata del registro
+//   mattone posato          ==  presenza segnata
+//   trave che la gru posa   ==  riga tirata sopra il totale
+//   livella "in bolla"      ==  i conti che tornano
 //
-// Da qui la narrazione in tre battute: si registra il lavoro (le tacche
-// cadono nella griglia mentre un contatore le somma) → si tira la riga →
-// il totale diventa l'identità (CA).
+// Due oggetti di cantiere che LAVORANO, non decorano:
+//   • la GRU cala la trave — senza di lei la riga del totale non arriva
+//   • la LIVELLA è quella trave, e la sua bolla si centra prima di sparire
 //
-// Vincolo forte: il frame finale coincide ESATTAMENTE con l'icona statica
-// (CA bianco su teal #0d9488). Chi guarda lo sting e poi apre l'app deve
-// vedere la stessa cosa, altrimenti lo sting racconta un logo che non esiste.
+// Le lettere restano il glifo VERO (Inter 800), mai ridisegnato: si animano
+// per intero (la C sale per corsi come una muratura, la A si ribalta in piedi
+// come un pannello prefabbricato). Una versione precedente spezzava la A con
+// clip-path per far posare la traversa dalla gru: le bande non coincidono con
+// la traversa reale del font e il glifo si rompeva. Le metriche di un font non
+// sono un'API — non ci si costruisce sopra un'animazione.
 //
-// `transparent` serve per l'export con canale alpha (webm vp9 / mov prores):
-// l'MP4 il canale alpha NON lo supporta e lo perderebbe in silenzio. Per la
-// trasparenza Remotion vuole anche --image-format=png.
+// Il frame finale coincide con l'icona statica dell'app: chi guarda lo sting e
+// poi apre CantiereApp deve trovare la stessa identica cosa.
+//
+// `transparent` per l'export con alpha (webm vp9 / mov prores). L'MP4 il canale
+// alpha NON lo supporta. Per la trasparenza Remotion vuole --image-format=png.
 // ---------------------------------------------------------------------------
 
 export const BRAND_TEAL = "#0d9488";
@@ -42,11 +48,11 @@ const MARKS = 14;
 const COLS = 7;
 
 export interface CantiereAppLogoProps {
-  /** Sfondo trasparente per export con alpha. Default: teal di brand. */
   transparent?: boolean;
-  /** Mostra il wordmark sotto il monogramma. */
   wordmark?: boolean;
 }
+
+const clamp = { extrapolateLeft: "clamp", extrapolateRight: "clamp" } as const;
 
 export const CantiereAppLogo: React.FC<CantiereAppLogoProps> = ({
   transparent = false,
@@ -55,82 +61,66 @@ export const CantiereAppLogo: React.FC<CantiereAppLogoProps> = ({
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
 
-  // Tutto in rapporto al lato minore: la stessa composizione regge 16:9, 1:1,
-  // 9:16 e l'icona quadrata senza riscrivere una misura.
+  // Misure in rapporto al lato minore: 16:9, 1:1, 9:16 e icona quadrata escono
+  // dalla stessa composizione senza riscrivere niente.
   const base = Math.min(width, height);
-  const letterSize = base * 0.34;
-  const strokeW = Math.max(base * 0.004, 2);
+  const letterSize = base * 0.3;
+  const strokeW = Math.max(base * 0.0038, 2);
   const boxW = letterSize * 1.9;
-  const boxH = letterSize * 1.6;
-
+  const boxH = letterSize * 1.35;
+  const craneH = boxH * 0.85;
   const cell = boxW / COLS;
   const markSize = cell * 0.5;
+  const jibW = boxW * 0.62;
+  const ruleY = boxH * 0.94; // dove si posa la trave/livella
 
-  // --- 1. La griglia (0-14) — ponteggio e registro nello stesso tratto ------
-  const gridDraw = interpolate(frame, [0, 14], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const gridFade = interpolate(frame, [64, 82], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-  const gridOpacity = gridDraw * gridFade * 0.22;
+  // --- 1. Griglia: ponteggio e registro nello stesso tratto (0-14) ----------
+  const gridDraw = interpolate(frame, [0, 14], [0, 1], clamp);
+  const gridOpacity = gridDraw * interpolate(frame, [54, 70], [1, 0], clamp) * 0.22;
 
-  // --- 2. Le tacche cadono e vengono contate (12-56) ------------------------
-  // Ogni tacca è una presenza segnata e un mattone posato. Il contatore sale
-  // in sincrono: conta esattamente ciò che hai appena visto posare.
-  const markDelay = (i: number) => 12 + i * 3;
-  const marksLanded = Math.max(
-    0,
-    Math.min(MARKS, Math.floor((frame - 12) / 3) + 1),
-  );
+  // --- 2. Le tacche cadono e vengono contate (12-54) ------------------------
+  const marksLanded = Math.max(0, Math.min(MARKS, Math.floor((frame - 12) / 3) + 1));
+  const marksFade = interpolate(frame, [54, 68], [1, 0], clamp);
+  const counterFade = interpolate(frame, [56, 68], [1, 0], clamp);
 
-  const marksFade = interpolate(frame, [66, 80], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  // --- 3. La riga del totale si posa (56-70) --------------------------------
-  // Entra da sinistra e si ferma: è la trave che chiude la struttura ed è la
-  // riga che in contabilità si tira sopra la somma. Stesso gesto, due letture.
-  const rule = spring({
-    frame: frame - 56,
+  // --- 3. La gru entra (44-62) e più tardi se ne va (118-136) ---------------
+  const craneIn = spring({
+    frame: frame - 44,
     fps,
-    config: { damping: 18, mass: 0.9, stiffness: 70 },
+    config: { damping: 20, mass: 0.9, stiffness: 60 },
   });
-  const ruleX = interpolate(rule, [0, 1], [-boxW, 0]);
-  const ruleOpacity = interpolate(frame, [56, 62], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
+  const craneOpacity = craneIn * interpolate(frame, [118, 136], [1, 0], clamp);
+
+  // --- 4. La C sale per corsi, come una muratura (58-78) --------------------
+  const cBuild = interpolate(frame, [58, 78], [0, 1], clamp);
+
+  // --- 5. La A si ribalta in piedi, come un pannello prefabbricato (66-86) --
+  const aStand = spring({
+    frame: frame - 66,
+    fps,
+    config: { damping: 13, mass: 0.8, stiffness: 90 },
   });
 
-  // --- 4. Il totale diventa identità (72-96) --------------------------------
-  const counterFade = interpolate(frame, [72, 84], [1, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
+  // --- 6. La gru cala la trave, la posa, risale vuota (84-126) --------------
+  const hookDown = interpolate(frame, [84, 106], [0, 1], clamp);
+  const hookUp = interpolate(frame, [112, 126], [0, 1], clamp);
+  const hookY = (hookDown - hookUp) * (craneH * 0.42 + ruleY * 0.62);
+  // La trave viaggia col gancio finché non è posata: da lì resta dov'è.
+  const beamReleased = interpolate(frame, [104, 110], [0, 1], clamp);
+  const beamCarried = interpolate(frame, [86, 92], [0, 1], clamp);
 
-  const letterRise = (delay: number) =>
-    spring({
-      frame: frame - delay,
-      fps,
-      config: { damping: 14, mass: 0.7, stiffness: 90 },
-    });
-  const cRise = letterRise(76);
-  const aRise = letterRise(82);
-
-  const riseStyle = (p: number): React.CSSProperties => ({
-    display: "inline-block",
-    transform: `translateY(${(1 - p) * letterSize * 0.42}px)`,
-    opacity: interpolate(p, [0, 0.35], [0, 1], {
-      extrapolateLeft: "clamp",
-      extrapolateRight: "clamp",
-    }),
+  // --- 7. La bolla si centra: "in bolla" == i conti tornano (116-140) -------
+  const bubble = spring({
+    frame: frame - 116,
+    fps,
+    config: { damping: 9, mass: 0.9, stiffness: 55 },
   });
+  const bubbleX = interpolate(bubble, [0, 1], [-boxW * 0.32, 0]);
+  // Poi la livella smette di essere oggetto e resta la riga del totale.
+  const levelChrome = interpolate(frame, [142, 156], [1, 0], clamp);
 
   const word = spring({
-    frame: frame - 96,
+    frame: frame - 150,
     fps,
     config: { damping: 16, mass: 0.8, stiffness: 80 },
   });
@@ -141,6 +131,28 @@ export const CantiereAppLogo: React.FC<CantiereAppLogoProps> = ({
     opacity: gridOpacity,
   };
 
+  const glyph: React.CSSProperties = {
+    position: "absolute",
+    fontSize: letterSize,
+    fontWeight: 800,
+    lineHeight: 1,
+    color: "#ffffff",
+    letterSpacing: letterSize * -0.02,
+    textAlign: "center",
+  };
+
+  const letterGap = letterSize * 0.06;
+  const letterW = letterSize * 0.72;
+  const pairW = letterW * 2 + letterGap;
+  const cLeft = (boxW - pairW) / 2;
+  const aLeft = cLeft + letterW + letterGap;
+  const letterTop = (boxH - letterSize) / 2;
+
+  // Trave: sotto il gancio mentre viaggia, alla riga del totale una volta posata.
+  const beamY = interpolate(beamReleased, [0, 1], [craneH * 0.12 + hookY + strokeW * 3, craneH + ruleY]);
+  const beamX = interpolate(beamReleased, [0, 1], [(boxW - jibW * 0.5) / 2, 0]);
+  const beamW = interpolate(beamReleased, [0, 1], [jibW * 0.5, boxW]);
+
   return (
     <AbsoluteFill
       style={{
@@ -150,126 +162,221 @@ export const CantiereAppLogo: React.FC<CantiereAppLogoProps> = ({
         justifyContent: "center",
       }}
     >
-      <div
-        style={{
-          position: "relative",
-          width: boxW,
-          height: boxH,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        {/* Griglia: montanti verticali + correnti orizzontali. Letta da lontano
-            è un ponteggio, letta da vicino è un registro quadrettato. */}
-        {Array.from({ length: COLS + 1 }).map((_, i) => (
+      {/* Il gruppo include la fascia della gru: così la gru sta DENTRO
+          l'inquadratura e tutto resta centrato come un blocco solo. */}
+      <div style={{ position: "relative", width: boxW, height: craneH + boxH }}>
+        {/* --- GRU: montante, freccia, cavo, gancio ----------------------- */}
+        <div
+          style={{
+            position: "absolute",
+            left: boxW / 2 - jibW * 0.5,
+            top: 0,
+            width: jibW,
+            height: craneH,
+            opacity: craneOpacity,
+            transform: `translateY(${(1 - craneIn) * -craneH * 0.6}px)`,
+          }}
+        >
           <div
-            key={`v${i}`}
             style={{
-              ...gridLine,
-              left: i * cell,
-              top: `${50 - gridDraw * 50}%`,
-              width: strokeW * 0.6,
-              height: `${gridDraw * 100}%`,
+              position: "absolute",
+              left: jibW * 0.14,
+              top: craneH * 0.12,
+              width: strokeW * 1.8,
+              height: craneH * 0.7,
+              background: "#ffffff",
             }}
           />
-        ))}
-        {Array.from({ length: 3 }).map((_, i) => (
           <div
-            key={`h${i}`}
             style={{
-              ...gridLine,
-              top: (boxH / 2) * i,
-              left: `${50 - gridDraw * 50}%`,
-              height: strokeW * 0.6,
-              width: `${gridDraw * 100}%`,
+              position: "absolute",
+              left: 0,
+              top: craneH * 0.12,
+              width: jibW,
+              height: strokeW * 1.8,
+              background: "#ffffff",
             }}
           />
-        ))}
+          <div
+            style={{
+              position: "absolute",
+              left: jibW * 0.5,
+              top: craneH * 0.12,
+              width: strokeW * 0.7,
+              height: Math.max(hookY, 0),
+              background: "#ffffff",
+              opacity: 0.85,
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              left: jibW * 0.5 - strokeW * 1.8,
+              top: craneH * 0.12 + Math.max(hookY, 0),
+              width: strokeW * 4.2,
+              height: strokeW * 2.2,
+              borderRadius: strokeW * 0.6,
+              background: "#ffffff",
+            }}
+          />
+        </div>
 
-        {/* Le tacche: cadono nelle celle, due file. Presenze segnate, mattoni posati. */}
-        {Array.from({ length: MARKS }).map((_, i) => {
-          const col = i % COLS;
-          const row = Math.floor(i / COLS);
-          const p = spring({
-            frame: frame - markDelay(i),
-            fps,
-            config: { damping: 20, mass: 0.5, stiffness: 140 },
-          });
-          return (
+        {/* --- Il piano di lavoro ----------------------------------------- */}
+        <div style={{ position: "absolute", left: 0, top: craneH, width: boxW, height: boxH }}>
+          {Array.from({ length: COLS + 1 }).map((_, i) => (
             <div
-              key={`m${i}`}
+              key={`v${i}`}
               style={{
-                position: "absolute",
-                left: col * cell + (cell - markSize) / 2,
-                top: row * (boxH / 2) + (boxH / 2 - markSize) / 2,
-                width: markSize,
-                height: markSize * 0.42,
-                borderRadius: strokeW * 0.8,
-                background: "#ffffff",
-                opacity: p * 0.92 * marksFade,
-                transform: `translateY(${(1 - p) * -cell * 0.8}px)`,
+                ...gridLine,
+                left: i * cell,
+                top: `${50 - gridDraw * 50}%`,
+                width: strokeW * 0.6,
+                height: `${gridDraw * 100}%`,
               }}
             />
-          );
-        })}
+          ))}
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={`h${i}`}
+              style={{
+                ...gridLine,
+                top: (boxH / 2) * i,
+                left: `${50 - gridDraw * 50}%`,
+                height: strokeW * 0.6,
+                width: `${gridDraw * 100}%`,
+              }}
+            />
+          ))}
 
-        {/* Il contatore: somma in tempo reale le tacche posate.
-            tabular-nums perché le cifre non devono ballare mentre sale. */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: -letterSize * 0.34,
-            width: "100%",
-            textAlign: "right",
-            color: "#ffffff",
-            fontSize: letterSize * 0.3,
-            fontWeight: 700,
-            fontVariantNumeric: "tabular-nums",
-            opacity: counterFade,
-          }}
-        >
-          {String(marksLanded).padStart(2, "0")}
+          {/* Tacche: presenze segnate / mattoni posati */}
+          {Array.from({ length: MARKS }).map((_, i) => {
+            const col = i % COLS;
+            const row = Math.floor(i / COLS);
+            const p = spring({
+              frame: frame - (12 + i * 3),
+              fps,
+              config: { damping: 20, mass: 0.5, stiffness: 140 },
+            });
+            return (
+              <div
+                key={`m${i}`}
+                style={{
+                  position: "absolute",
+                  left: col * cell + (cell - markSize) / 2,
+                  top: row * (boxH / 2) + (boxH / 2 - markSize) / 2,
+                  width: markSize,
+                  height: markSize * 0.42,
+                  borderRadius: strokeW * 0.8,
+                  background: "#ffffff",
+                  opacity: p * 0.92 * marksFade,
+                  transform: `translateY(${(1 - p) * -cell * 0.8}px)`,
+                }}
+              />
+            );
+          })}
+
+          {/* Contatore: somma esattamente le tacche posate */}
+          <div
+            style={{
+              position: "absolute",
+              top: boxH * 1.02,
+              width: "100%",
+              textAlign: "right",
+              color: "#ffffff",
+              fontSize: letterSize * 0.3,
+              fontWeight: 700,
+              fontVariantNumeric: "tabular-nums",
+              opacity: counterFade,
+            }}
+          >
+            {String(marksLanded).padStart(2, "0")}
+          </div>
+
+          {/* C: sale per corsi, come una muratura */}
+          <div
+            style={{
+              ...glyph,
+              left: cLeft,
+              top: letterTop,
+              width: letterW,
+              clipPath: `inset(${(1 - cBuild) * 100}% 0% 0% 0%)`,
+            }}
+          >
+            C
+          </div>
+
+          {/* A: si ribalta in piedi, come un pannello prefabbricato */}
+          <div
+            style={{
+              ...glyph,
+              left: aLeft,
+              top: letterTop,
+              width: letterW,
+              opacity: interpolate(aStand, [0, 0.25], [0, 1], clamp),
+              transformOrigin: "0% 100%",
+              transform: `rotate(${(1 - aStand) * -14}deg)`,
+            }}
+          >
+            A
+          </div>
         </div>
 
-        {/* Il monogramma: stesso peso e stesso rapporto dell'icona statica. */}
+        {/* --- LA TRAVE: viaggia col gancio, si posa, diventa livella ----- */}
         <div
           style={{
             position: "absolute",
-            display: "flex",
-            alignItems: "baseline",
-            gap: letterSize * 0.06,
-            color: "#ffffff",
-            fontSize: letterSize,
-            fontWeight: 800,
-            letterSpacing: letterSize * -0.02,
-            lineHeight: 1,
+            left: beamX,
+            top: beamY,
+            width: beamW,
+            height: strokeW * 2.2 + levelChrome * strokeW * 3.2,
+            opacity: beamCarried,
           }}
         >
-          <span style={riseStyle(cRise)}>C</span>
-          <span style={riseStyle(aRise)}>A</span>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "#ffffff",
+              borderRadius: strokeW,
+            }}
+          />
+          {/* fiala + bolla: compaiono solo quando la trave è posata */}
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              width: boxW * 0.2,
+              height: strokeW * 3,
+              marginLeft: -boxW * 0.1,
+              marginTop: -strokeW * 1.5,
+              borderRadius: strokeW * 1.5,
+              background: BRAND_TEAL,
+              opacity: levelChrome * beamReleased,
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              width: strokeW * 2.4,
+              height: strokeW * 2.4,
+              marginLeft: -strokeW * 1.2,
+              marginTop: -strokeW * 1.2,
+              borderRadius: "50%",
+              background: "#ffffff",
+              opacity: levelChrome * beamReleased,
+              transform: `translateX(${bubbleX}px)`,
+            }}
+          />
         </div>
-
-        {/* La riga del totale / la trave. */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: -letterSize * 0.06,
-            left: 0,
-            width: boxW,
-            height: strokeW * 2.2,
-            background: "#ffffff",
-            borderRadius: strokeW,
-            transform: `translateX(${ruleX}px)`,
-            opacity: ruleOpacity,
-          }}
-        />
       </div>
 
       {wordmark ? (
         <div
           style={{
-            marginTop: letterSize * 0.42,
+            marginTop: letterSize * 0.4,
             color: "#ffffff",
             fontSize: letterSize * 0.19,
             fontWeight: 600,

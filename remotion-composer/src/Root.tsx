@@ -344,7 +344,7 @@ export const Root: React.FC = () => {
           key={name}
           id={`CantiereAppLogo${name}`}
           component={CantiereAppLogo}
-          durationInFrames={135}
+          durationInFrames={170}
           fps={30}
           width={w}
           height={h}
