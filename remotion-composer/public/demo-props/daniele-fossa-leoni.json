@@ -1,0 +1,146 @@
+{
+  "themeConfig": {
+    "primaryColor": "#C9A24B",
+    "accentColor": "#E0B95C",
+    "backgroundColor": "#0B0A0F",
+    "surfaceColor": "#161219",
+    "textColor": "#F4ECDD",
+    "headingFont": "Space Grotesk",
+    "chartColors": [
+      "#E0B95C",
+      "#C9A24B",
+      "#B5532F",
+      "#7A5C9E",
+      "#8A6D3B"
+    ],
+    "captionHighlightColor": "#E0B95C"
+  },
+  "cuts": [
+    {
+      "id": "s01",
+      "source": "",
+      "type": "hero_title",
+      "text": "Daniele",
+      "heroSubtitle": "nella fossa dei leoni",
+      "backgroundImage": "daniele/engraving.jpg",
+      "backgroundOverlay": 0.5,
+      "in_seconds": 0.0,
+      "out_seconds": 2.25
+    },
+    {
+      "id": "s02",
+      "source": "daniele/rubens2.jpg",
+      "in_seconds": 2.25,
+      "out_seconds": 14.58,
+      "animation": "ken-burns"
+    },
+    {
+      "id": "s03",
+      "source": "daniele/lacma-den.jpg",
+      "in_seconds": 14.58,
+      "out_seconds": 22.06,
+      "animation": "pan-right"
+    },
+    {
+      "id": "s04",
+      "source": "",
+      "type": "callout",
+      "callout_type": "warning",
+      "title": "Il decreto irrevocabile",
+      "text": "Per trenta giorni, nessuna preghiera se non al re Dario.",
+      "backgroundImage": "daniele/lacma-den.jpg",
+      "backgroundOverlay": 0.62,
+      "in_seconds": 22.06,
+      "out_seconds": 34.51
+    },
+    {
+      "id": "s05",
+      "source": "daniele/engraving.jpg",
+      "in_seconds": 34.51,
+      "out_seconds": 45.14,
+      "animation": "ken-burns"
+    },
+    {
+      "id": "s06",
+      "source": "daniele/rubens-den.jpg",
+      "in_seconds": 45.14,
+      "out_seconds": 57.8,
+      "animation": "zoom-in"
+    },
+    {
+      "id": "s07",
+      "source": "",
+      "type": "callout",
+      "callout_type": "quote",
+      "title": "Il re Dario, all'alba",
+      "text": "«Daniele, il tuo Dio ti ha potuto salvare?»",
+      "backgroundImage": "daniele/riviere-den.jpg",
+      "backgroundOverlay": 0.55,
+      "in_seconds": 57.8,
+      "out_seconds": 64.32
+    },
+    {
+      "id": "s08",
+      "source": "",
+      "type": "callout",
+      "callout_type": "quote",
+      "title": "Daniele",
+      "text": "«Il mio Dio ha mandato il suo angelo e ha chiuso le fauci dei leoni.»",
+      "backgroundImage": "daniele/answer-king.jpg",
+      "backgroundOverlay": 0.5,
+      "in_seconds": 64.32,
+      "out_seconds": 72.71
+    },
+    {
+      "id": "s09",
+      "source": "",
+      "type": "hero_title",
+      "text": "Il Dio vivente",
+      "heroSubtitle": "Daniele 6",
+      "backgroundImage": "daniele/riviere-den.jpg",
+      "backgroundOverlay": 0.55,
+      "in_seconds": 72.71,
+      "out_seconds": 81.81
+    }
+  ],
+  "overlays": [
+    {
+      "type": "section_title",
+      "in_seconds": 2.55,
+      "out_seconds": 14.58,
+      "text": "Il personaggio",
+      "accentColor": "#E0B95C",
+      "position": "top-left"
+    },
+    {
+      "type": "section_title",
+      "in_seconds": 14.88,
+      "out_seconds": 22.06,
+      "text": "L'invidia",
+      "accentColor": "#E0B95C",
+      "position": "top-left"
+    },
+    {
+      "type": "section_title",
+      "in_seconds": 34.81,
+      "out_seconds": 45.14,
+      "text": "La preghiera",
+      "accentColor": "#E0B95C",
+      "position": "top-left"
+    },
+    {
+      "type": "section_title",
+      "in_seconds": 45.44,
+      "out_seconds": 57.8,
+      "text": "La condanna",
+      "accentColor": "#E0B95C",
+      "position": "top-left"
+    }
+  ],
+  "audio": {
+    "narration": {
+      "src": "daniele/narration.wav",
+      "volume": 1.0
+    }
+  }
+}

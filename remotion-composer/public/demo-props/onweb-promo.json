@@ -1,0 +1,111 @@
+{
+  "themeConfig": {
+    "primaryColor": "#3B82F6",
+    "accentColor": "#38BDF8",
+    "backgroundColor": "#0B1220",
+    "surfaceColor": "#111B2E",
+    "textColor": "#F8FAFC",
+    "headingFont": "Space Grotesk",
+    "chartColors": ["#38BDF8", "#3B82F6", "#22D3EE", "#0EA5E9", "#60A5FA", "#818CF8"],
+    "captionHighlightColor": "#38BDF8"
+  },
+  "cuts": [
+    {
+      "id": "hook",
+      "source": "",
+      "type": "hero_title",
+      "in_seconds": 0,
+      "out_seconds": 4,
+      "text": "On/Web",
+      "heroSubtitle": "Presenza online che lascia il segno"
+    },
+    {
+      "id": "problem",
+      "source": "",
+      "type": "callout",
+      "callout_type": "tip",
+      "in_seconds": 4,
+      "out_seconds": 8.5,
+      "title": "Il problema",
+      "text": "Un sito lento perde clienti prima ancora del primo clic."
+    },
+    {
+      "id": "difference",
+      "source": "",
+      "type": "comparison",
+      "in_seconds": 8.5,
+      "out_seconds": 13.5,
+      "title": "La differenza",
+      "leftLabel": "Template generico",
+      "leftValue": "3.8s",
+      "rightLabel": "Build On/Web",
+      "rightValue": "1.2s"
+    },
+    {
+      "id": "speed-chart",
+      "source": "",
+      "type": "bar_chart",
+      "in_seconds": 13.5,
+      "out_seconds": 18.5,
+      "title": "Tempo di caricamento (LCP)",
+      "chartData": [
+        { "label": "Prima", "value": 3.8 },
+        { "label": "Con On/Web", "value": 1.2 }
+      ],
+      "showValues": true
+    },
+    {
+      "id": "deliverables",
+      "source": "",
+      "type": "kpi_grid",
+      "in_seconds": 18.5,
+      "out_seconds": 24,
+      "title": "Cosa consegniamo",
+      "columns": 4,
+      "chartData": [
+        { "label": "Lighthouse", "value": 100, "suffix": "" },
+        { "label": "LCP", "value": 1.2, "suffix": "s" },
+        { "label": "Uptime", "value": 99.9, "suffix": "%" },
+        { "label": "Mobile-first", "value": 100, "suffix": "%" }
+      ]
+    },
+    {
+      "id": "promise",
+      "source": "",
+      "type": "text_card",
+      "in_seconds": 24,
+      "out_seconds": 28,
+      "text": "Web. Mobile. Performance."
+    },
+    {
+      "id": "cta",
+      "source": "",
+      "type": "hero_title",
+      "in_seconds": 28,
+      "out_seconds": 32,
+      "text": "on-website.net",
+      "heroSubtitle": "Costruiamo la tua presenza. Parliamone."
+    }
+  ],
+  "overlays": [
+    {
+      "type": "stat_reveal",
+      "in_seconds": 14.2,
+      "out_seconds": 18.5,
+      "text": "−68%",
+      "subtitle": "tempo di caricamento",
+      "accentColor": "#38BDF8",
+      "position": "bottom-right"
+    },
+    {
+      "type": "provider_chip",
+      "in_seconds": 18.7,
+      "out_seconds": 24,
+      "providers": ["Next.js", "React Native", "TypeScript", "Vercel"],
+      "label": "Stack",
+      "cycleSeconds": 1.1,
+      "accentColor": "#38BDF8",
+      "position": "bottom-right"
+    }
+  ]
+}
