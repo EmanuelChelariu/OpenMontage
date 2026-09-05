@@ -27,7 +27,7 @@ export interface CreationSceneMotion {
   origin?: string; // transform-origin del ritaglio
 }
 
-export interface CreationSceneProps {
+export type CreationSceneProps = {
   bg: string; // file sotto public/creation/
   fg?: string | null; // ritaglio con alpha, stesso canvas del bg
   seconds: number;
@@ -35,7 +35,7 @@ export interface CreationSceneProps {
   motion?: CreationSceneMotion | null;
   /** Crop del cover (es. "50% 62%" per scendere); IDENTICO su bg e fg. */
   objectPosition?: string;
-}
+};
 
 export const calculateCreationSceneMetadata: CalculateMetadataFunction<
   CreationSceneProps
