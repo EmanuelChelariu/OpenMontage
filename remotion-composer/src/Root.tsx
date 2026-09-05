@@ -18,6 +18,8 @@ import { CollageBurst, CollageBurstProps } from "./CollageBurst";
 import { LyricOverlay, LyricOverlayProps } from "./LyricOverlay";
 import { CriccoLogo, CriccoLogoProps } from "./CriccoLogo";
 import { EmanuelSplash, EmanuelSplashProps } from "./EmanuelSplash";
+import { BisericiHubSplash, BisericiHubWordmark } from "./BisericiHubSplash";
+import { BisericiHubChoreoPainterly } from "./BisericiHubChoreoPainterly";
 import { CantiereAppLogo, CantiereAppLogoProps } from "./CantiereAppLogo";
 import { CantiereAppIcon, CantiereAppIconProps } from "./CantiereAppIcon";
 import {
@@ -326,6 +328,31 @@ export const Root: React.FC = () => {
           defaultProps={{ concept } as EmanuelSplashProps}
         />
       ))}
+      <Composition
+        id="BisericiHubSplash"
+        component={BisericiHubSplash}
+        durationInFrames={165}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="BisericiHubWordmark"
+        component={BisericiHubWordmark}
+        durationInFrames={1}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+      <Composition
+        id="BisericiHubChoreoPainterly"
+        component={BisericiHubChoreoPainterly}
+        durationInFrames={168}
+        fps={30}
+        width={1080}
+        height={1920}
+      />
+
       {(["A", "B", "C"] as const).map((concept) => (
         <Composition
           key={concept}
